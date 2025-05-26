@@ -53,8 +53,6 @@ if "logado" not in st.session_state:
     st.session_state.modo = "Desktop"
     st.session_state.filtro = "Todos"
     st.session_state.pacientes = carregar_pacientes()
-if "ajuste_opcao" not in st.session_state:
-    st.session_state.ajuste_opcao = ""
 
 # Login
 if not st.session_state.logado:
@@ -86,12 +84,12 @@ with col5:
     opcoes = ["", "Trocar senha", "Sair do sistema"]
     if st.session_state.admin:
         opcoes.insert(1, "Criar novo usuário")
-    ajuste = st.selectbox("Ajustes", opcoes, key="ajuste_opcao")
-    if ajuste == "Trocar senha":
+    escolha = st.selectbox("Ajustes", opcoes)
+    if escolha == "Trocar senha":
         st.session_state.pagina = "trocar_senha"
-    elif ajuste == "Criar novo usuário":
+    elif escolha == "Criar novo usuário":
         st.session_state.pagina = "novo_usuario"
-    elif ajuste == "Sair do sistema":
+    elif escolha == "Sair do sistema":
         st.session_state.logado = False
         st.rerun()
 
@@ -117,7 +115,6 @@ if st.session_state.pagina == "novo_usuario":
     with col_b:
         if st.button("Cancelar"):
             st.session_state.pagina = "principal"
-            st.session_state.ajuste_opcao = ""
             st.rerun()
     st.stop()
 
@@ -142,7 +139,6 @@ if st.session_state.pagina == "trocar_senha":
     with col2:
         if st.button("Cancelar"):
             st.session_state.pagina = "principal"
-            st.session_state.ajuste_opcao = ""
             st.rerun()
     st.stop()
 
@@ -170,7 +166,7 @@ if st.session_state.pagina == "novo_paciente":
             st.rerun()
     st.stop()
 
-# Página principal - exibição de pacientes
+# Página principal
 st.markdown("### Lista de Pacientes")
 df = st.session_state.pacientes.copy()
 if st.session_state.filtro == "Ativos":
