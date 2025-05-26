@@ -146,6 +146,7 @@ if st.session_state.pagina == "principal":
 
 
 
+
 # Página novo paciente
 if st.session_state.pagina == "novo_paciente":
     with st.form("form_paciente", clear_on_submit=True):
@@ -153,24 +154,25 @@ if st.session_state.pagina == "novo_paciente":
         nome = st.text_input("Nome do paciente")
         data_nascimento = st.date_input("Data de nascimento")
         telefone = st.text_input("Telefone (ex: +55 31999999999)", value="+55")
-        data_cirurgia = st.date_input("Data da cirurgia")
+        data_cirurgia = st.date_input("Data da cirurgia", key="data_cirurgia_novo")
 
         st.markdown("### Retornos programados")
         dias_retornos = [7, 14, 21, 30, 60, 90, 180, 365]
         datas_retornos = []
+
         for i, dias in enumerate(dias_retornos):
             padrao = data_cirurgia + timedelta(days=dias)
             col1, col2 = st.columns([1, 3])
             marcado = col1.checkbox(f"Retorno {i+1}", key=f"check_retorno_{i}")
             if marcado:
                 data_editada = col2.date_input(f"Data Retorno {i+1}", value=padrao, key=f"data_retorno_{i}")
+                datas_retornos.append((marcado, data_editada))
             else:
                 col2.date_input(f"Data Retorno {i+1}", value=padrao, disabled=True, key=f"data_retorno_{i}")
-            datas_retornos.append((marcado, padrao))
+                datas_retornos.append((marcado, padrao))
 
         salvar = st.form_submit_button("Salvar")
     if salvar:
-        # Usar primeiro retorno ativo como próximo retorno
         proximo_retorno = next((data for marcado, data in datas_retornos if marcado), datas_retornos[0][1])
         novo = pd.DataFrame([{
             "Nome": nome,
