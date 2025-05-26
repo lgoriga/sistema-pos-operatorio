@@ -42,9 +42,9 @@ def status_cor(data_proximo_retorno):
     else:
         return "🟢 Ok"
 
+# Sessões
 if "usuarios" not in st.session_state:
     st.session_state.usuarios = carregar_usuarios()
-
 if "logado" not in st.session_state:
     st.session_state.logado = False
     st.session_state.usuario = ""
@@ -53,7 +53,10 @@ if "logado" not in st.session_state:
     st.session_state.modo = "Desktop"
     st.session_state.filtro = "Todos"
     st.session_state.pacientes = carregar_pacientes()
+if "ajuste_opcao" not in st.session_state:
+    st.session_state.ajuste_opcao = ""
 
+# Login
 if not st.session_state.logado:
     st.title("Login - Sistema Pós-Operatório")
     usuario = st.text_input("Usuário")
@@ -83,16 +86,16 @@ with col5:
     opcoes = ["", "Trocar senha", "Sair do sistema"]
     if st.session_state.admin:
         opcoes.insert(1, "Criar novo usuário")
-    escolha = st.selectbox("Ajustes", opcoes)
-    if escolha == "Trocar senha":
+    ajuste = st.selectbox("Ajustes", opcoes, key="ajuste_opcao")
+    if ajuste == "Trocar senha":
         st.session_state.pagina = "trocar_senha"
-    elif escolha == "Criar novo usuário":
+    elif ajuste == "Criar novo usuário":
         st.session_state.pagina = "novo_usuario"
-    elif escolha == "Sair do sistema":
+    elif ajuste == "Sair do sistema":
         st.session_state.logado = False
         st.rerun()
 
-# Página de criação de novo usuário
+# Página criar novo usuário
 if st.session_state.pagina == "novo_usuario":
     st.markdown("### Criar Novo Usuário")
     novo_usuario = st.text_input("Usuário")
@@ -114,10 +117,11 @@ if st.session_state.pagina == "novo_usuario":
     with col_b:
         if st.button("Cancelar"):
             st.session_state.pagina = "principal"
+            st.session_state.ajuste_opcao = ""
             st.rerun()
     st.stop()
 
-# Página de troca de senha
+# Página trocar senha
 if st.session_state.pagina == "trocar_senha":
     st.markdown("### Trocar Senha")
     senha_atual = st.text_input("Senha atual", type="password")
@@ -138,10 +142,11 @@ if st.session_state.pagina == "trocar_senha":
     with col2:
         if st.button("Cancelar"):
             st.session_state.pagina = "principal"
+            st.session_state.ajuste_opcao = ""
             st.rerun()
     st.stop()
 
-# Página de cadastro de novo paciente
+# Página novo paciente
 if st.session_state.pagina == "novo_paciente":
     with st.form("form_paciente", clear_on_submit=True):
         st.subheader("Novo Paciente")
