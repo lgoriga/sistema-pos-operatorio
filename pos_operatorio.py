@@ -49,6 +49,7 @@ if "logado" not in st.session_state:
     st.session_state.logado = False
     st.session_state.usuario = ""
     st.session_state.admin = False
+    st.session_state.pagina = "principal"
     st.session_state.modo = "Desktop"
     st.session_state.filtro = "Todos"
     st.session_state.pacientes = carregar_pacientes()
@@ -68,6 +69,7 @@ if not st.session_state.logado:
             st.error("Usuário ou senha incorretos.")
     st.stop()
 
+# Barra superior com layout mais ajustado
 col1, col2, col3, col4, col5 = st.columns([2, 1, 1, 1, 1])
 with col1:
     st.markdown("### Sistema Pós-Operatório")
@@ -77,21 +79,54 @@ with col3:
     st.selectbox("Filtro", ["Todos", "Ativos", "De alta"], key="filtro")
 with col4:
     if st.button("Adicionar Paciente"):
-        st.session_state.adicionando = True
+        st.session_state.pagina = "novo_paciente"
 with col5:
-    with st.expander("Settings"):
-        if st.button("Logout"):
-            st.session_state.logado = False
-            st.rerun()
-        st.markdown("---")
-        st.markdown("**Mudar senha**")
-        nova_senha = st.text_input("Nova senha", type="password")
-        if st.button("Salvar nova senha"):
-            st.session_state.usuarios[st.session_state.usuario]["senha"] = hash_senha(nova_senha)
-            salvar_usuarios(st.session_state.usuarios)
-            st.success("Senha atualizada com sucesso.")
+    if st.button("Ajustes"):
+        st.session_state.pagina = "ajustes"
 
-if "adicionando" in st.session_state and st.session_state.adicionando:
+# Ajustes: troca de senha e gestão de usuários (admin)
+if st.session_state.pagina == "ajustes":
+    st.markdown("### Ajustes")
+    with st.expander("Trocar Senha"):
+        senha_atual = st.text_input("Senha atual", type="password")
+        nova_senha = st.text_input("Nova senha", type="password")
+        confirmar = st.text_input("Confirmar nova senha", type="password")
+        if st.button("Atualizar senha"):
+            if hash_senha(senha_atual) == st.session_state.usuarios[st.session_state.usuario]["senha"]:
+                if nova_senha == confirmar and nova_senha != "":
+                    st.session_state.usuarios[st.session_state.usuario]["senha"] = hash_senha(nova_senha)
+                    salvar_usuarios(st.session_state.usuarios)
+                    st.success("Senha atualizada com sucesso!")
+                else:
+                    st.error("As senhas não coincidem ou estão vazias.")
+            else:
+                st.error("Senha atual incorreta.")
+
+    if st.session_state.admin:
+        st.markdown("---")
+        st.markdown("### Criar Novo Usuário")
+        novo_usuario = st.text_input("Novo usuário")
+        nova_senha_usuario = st.text_input("Senha do novo usuário", type="password")
+        confirmar_senha_usuario = st.text_input("Confirmar senha", type="password")
+        novo_admin = st.checkbox("Conceder privilégios de administrador")
+        if st.button("Criar usuário"):
+            if novo_usuario and nova_senha_usuario == confirmar_senha_usuario:
+                st.session_state.usuarios[novo_usuario] = {
+                    "senha": hash_senha(nova_senha_usuario),
+                    "admin": novo_admin
+                }
+                salvar_usuarios(st.session_state.usuarios)
+                st.success("Usuário criado com sucesso!")
+            else:
+                st.error("Verifique os campos do novo usuário.")
+    st.markdown("---")
+    if st.button("Sair do sistema"):
+        st.session_state.logado = False
+        st.rerun()
+    st.stop()
+
+# Cadastro de novo paciente
+if st.session_state.pagina == "novo_paciente":
     with st.form("form_paciente", clear_on_submit=True):
         st.subheader("Novo Paciente")
         nome = st.text_input("Nome do paciente")
@@ -110,9 +145,11 @@ if "adicionando" in st.session_state and st.session_state.adicionando:
             st.session_state.pacientes = pd.concat([st.session_state.pacientes, novo], ignore_index=True)
             salvar_pacientes(st.session_state.pacientes)
             st.success("Paciente salvo!")
-            st.session_state.adicionando = False
+            st.session_state.pagina = "principal"
             st.rerun()
+    st.stop()
 
+# Exibição de pacientes
 st.markdown("### Lista de Pacientes")
 df = st.session_state.pacientes.copy()
 if st.session_state.filtro == "Ativos":
