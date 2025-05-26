@@ -90,7 +90,6 @@ if not st.session_state.logado:
             st.rerun()
         else:
             st.error("Usuário ou senha incorretos.")
-    st.stop()
 # Barra superior única
 col0, col2, col3, col4, col5 = st.columns([1, 1, 1, 1, 1])
 with col0:
