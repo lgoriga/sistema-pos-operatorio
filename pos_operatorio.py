@@ -180,7 +180,7 @@ if st.session_state.pagina == "principal":
                             st.rerun()
                     else:
                         linha[6].write("")
-                    st.markdown("<hr style='margin:0.2rem 0;'>", unsafe_allow_html=True)
+                    st.markdown("<hr style='margin:0.05rem 0;'>", unsafe_allow_html=True)
 
         elif modo == "Mobile 1":
             for i, row in df.iterrows():
