@@ -94,7 +94,7 @@ col1, col2, col3, col4, col5 = st.columns([2, 1, 1, 1, 1])
 with col1:
     st.markdown("### Sistema Pós-Operatório")
 with col2:
-    st.selectbox("Modo", ["Desktop", "Mobile"], key="modo")
+    st.selectbox("Modo", ["Desktop", "Mobile"], key="modo", label_visibility="collapsed")
 with col3:
     st.selectbox("Filtro", ["Todos", "Ativos", "De alta"], key="filtro")
 with col4:
@@ -123,7 +123,7 @@ if st.session_state.pagina == "principal":
     with col1:
         st.markdown("### Sistema Pós-Operatório")
     with col2:
-        st.selectbox("Modo", ["Desktop", "Mobile"], key="modo")
+        st.selectbox("Modo", ["Desktop", "Mobile"], key="modo", label_visibility="collapsed")
     with col3:
         st.selectbox("Filtro", ["Todos", "Ativos", "De alta"], key="filtro")
     with col4:
