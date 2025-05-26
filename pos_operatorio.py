@@ -60,7 +60,7 @@ if not st.session_state.logado:
             st.session_state.usuario = usuario
             st.session_state.admin = st.session_state.usuarios[usuario]["admin"]
             st.success("Login realizado com sucesso!")
-            st.experimental_rerun()
+            st.rerun()
         else:
             st.error("Usuário ou senha incorretos.")
     st.stop()
