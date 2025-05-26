@@ -108,156 +108,16 @@ with col4:
         st.session_state.pagina = "novo_paciente"
         st.rerun()
 with col5:
+with col5:
     with st.expander("Ajustes"):
         if st.button("Trocar senha"):
             st.session_state.pagina = "trocar_senha"
             st.rerun()
-
-cancelar = st.button("Cancelar")
-if cancelar:
-    st.session_state.pagina = "principal"
-    st.rerun()
         if st.session_state.admin:
             if st.button("Criar novo usuário"):
                 st.session_state.pagina = "novo_usuario"
                 st.rerun()
-
-cancelar = st.button("Cancelar")
-if cancelar:
-    st.session_state.pagina = "principal"
-    st.rerun()
         if st.button("Sair"):
             st.session_state.logado = False
             st.session_state.pagina = "principal"
             st.rerun()
-
-cancelar = st.button("Cancelar")
-if cancelar:
-    st.session_state.pagina = "principal"
-    st.rerun()
-
-# Página principal
-if st.session_state.pagina == "principal":
-    st.markdown("### Lista de Pacientes")
-    df = st.session_state.pacientes.copy()
-
-    if st.session_state.filtro == "Ativos":
-        df = df[df["Alta"] == "Não"]
-    elif st.session_state.filtro == "De alta":
-        df = df[df["Alta"] == "Sim"]
-
-    if df.empty:
-        st.info("Nenhum paciente cadastrado.")
-    else:
-        df.insert(0, "Nº", range(1, len(df) + 1))
-        df["Status de agendamento"] = df["Próximo retorno"].apply(status_cor)
-        for i, row in df.iterrows():
-            cols = st.columns([0.5, 1.5, 3, 2, 1])
-            cols[0].write(f"{row['Nº']}")
-            cols[1].write(f"{row['Status de agendamento']}")
-            cols[2].write(row["Nome"])
-            cols[3].write(row["Data da cirurgia"])
-            if cols[4].button("Editar", key=f"editar_{i}"):
-                st.session_state.paciente_editando = i
-                st.session_state.pagina = "editar_paciente"
-                st.rerun()
-
-cancelar = st.button("Cancelar")
-if cancelar:
-    st.session_state.pagina = "principal"
-    st.rerun()
-
-# O restante da navegação (edição, troca de senha, criação de usuário) será mantido como antes.
-
-
-# Página novo paciente
-if st.session_state.pagina == "novo_paciente":
-    with st.form("form_paciente", clear_on_submit=True):
-        st.subheader("Novo Paciente")
-        nome = st.text_input("Nome do paciente")
-        data_cirurgia = st.date_input("Data da cirurgia")
-        data_retorno = st.date_input("Data do próximo retorno")
-        alta = st.selectbox("Teve alta?", ["Não", "Sim"])
-        salvar = st.form_submit_button("Salvar")
-            status = status_cor(data_retorno)
-            novo = pd.DataFrame([{
-                "Nome": nome,
-                "Data da cirurgia": data_cirurgia.strftime("%d/%m/%y"),
-                "Próximo retorno": data_retorno.strftime("%d/%m/%y"),
-                "Status": status,
-                "Alta": alta
-            }])
-            st.session_state.pacientes = pd.concat([st.session_state.pacientes, novo], ignore_index=True)
-            salvar_pacientes(st.session_state.pacientes)
-            st.success("Paciente salvo com sucesso!")
-            st.session_state.pagina = "principal"
-            st.rerun()
-
-cancelar = st.button("Cancelar")
-if cancelar:
-    st.session_state.pagina = "principal"
-    st.rerun()
-
-# Página de trocar senha
-if st.session_state.pagina == "trocar_senha":
-    st.subheader("Trocar Senha")
-    with st.form("form_senha"):
-        senha_atual = st.text_input("Senha atual", type="password")
-        nova = st.text_input("Nova senha", type="password")
-        confirmar = st.text_input("Confirmar nova senha", type="password")
-        col1, col2 = st.columns(2)
-        with col1:
-            salvar = st.form_submit_button("Salvar")
-        with col2:
-            cancelar = st.form_submit_button("Cancelar")
-    if salvar:
-        if hash_senha(senha_atual) == st.session_state.usuarios[st.session_state.usuario]["senha"]:
-            if nova and nova == confirmar:
-                st.session_state.usuarios[st.session_state.usuario]["senha"] = hash_senha(nova)
-                salvar_usuarios(st.session_state.usuarios)
-                st.success("Senha atualizada com sucesso.")
-                st.session_state.pagina = "principal"
-                st.rerun()
-
-cancelar = st.button("Cancelar")
-if cancelar:
-    st.session_state.pagina = "principal"
-    st.rerun()
-    else:
-                st.error("As novas senhas não coincidem ou estão em branco.")
-    else:
-            st.error("Senha atual incorreta.")
-    elif cancelar:
-        st.session_state.pagina = "principal"
-        st.rerun()
-
-# Página novo usuário
-if st.session_state.pagina == "novo_usuario":
-    st.subheader("Criar Novo Usuário")
-    with st.form("form_usuario"):
-        novo_usuario = st.text_input("Novo usuário")
-        senha = st.text_input("Senha", type="password")
-        confirmar = st.text_input("Confirmar senha", type="password")
-        admin = st.checkbox("Administrador")
-        col1, col2 = st.columns(2)
-        with col1:
-            criar = st.form_submit_button("Criar")
-        with col2:
-            cancelar = st.form_submit_button("Cancelar")
-    if criar:
-        if novo_usuario and senha == confirmar:
-            st.session_state.usuarios[novo_usuario] = {"senha": hash_senha(senha), "admin": admin}
-            salvar_usuarios(st.session_state.usuarios)
-            st.success("Usuário criado com sucesso.")
-            st.session_state.pagina = "principal"
-            st.rerun()
-
-cancelar = st.button("Cancelar")
-if cancelar:
-    st.session_state.pagina = "principal"
-    st.rerun()
-    else:
-            st.error("Verifique se o nome foi preenchido e as senhas coincidem.")
-    elif cancelar:
-        st.session_state.pagina = "principal"
-        st.rerun()
