@@ -92,13 +92,11 @@ if not st.session_state.logado:
             st.error("Usuário ou senha incorretos.")
     st.stop()
 # Barra superior única
-col0, col1, col2, col3, col4, col5 = st.columns([1, 2, 1, 1, 1, 1])
+col0, col2, col3, col4, col5 = st.columns([1, 1, 1, 1, 1])
 with col0:
     if st.button("Voltar à lista"):
         st.session_state.pagina = "principal"
         st.rerun()
-with col1:
-    st.markdown("### Sistema Pós-Operatório")
 with col2:
     st.session_state.modo_interface = st.selectbox("Modo", ["Desktop", "Mobile"], index=["Desktop", "Mobile"].index(st.session_state.modo_interface))
 with col3:
