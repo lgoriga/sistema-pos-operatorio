@@ -145,26 +145,25 @@ if st.session_state.pagina == "principal":
                 st.rerun()
 
 
+
 # Página novo paciente
 if st.session_state.pagina == "novo_paciente":
     with st.form("form_paciente", clear_on_submit=True):
         st.subheader("Novo Paciente")
         nome = st.text_input("Nome do paciente")
+        data_nascimento = st.date_input("Data de nascimento")
+        telefone = st.text_input("Telefone (ex: +55 31999999999)", value="+55")
         data_cirurgia = st.date_input("Data da cirurgia")
         data_retorno = data_cirurgia + timedelta(days=7)
         st.markdown(f"**Data do próximo retorno:** {data_retorno.strftime('%d/%m/%y')}")
-        # Os campos abaixo serão salvos mas ainda não exibidos:
-        data_nascimento = datetime.today()  # campo oculto
-        telefone = "+55"  # campo oculto
 
         salvar = st.form_submit_button("Salvar")
     if salvar:
-        status = status_cor(data_retorno)
         novo = pd.DataFrame([{
             "Nome": nome,
             "Data da cirurgia": data_cirurgia.strftime("%d/%m/%y"),
             "Próximo retorno": data_retorno.strftime("%d/%m/%y"),
-            "Status": status,
+            "Status": "🟡 Pendente",
             "Alta": "Não",
             "Nascimento": data_nascimento.strftime("%d/%m/%Y"),
             "Telefone": telefone
