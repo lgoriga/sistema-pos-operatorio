@@ -96,7 +96,7 @@ with col0:
         st.session_state.pagina = "principal"
         st.rerun()
 with col2:
-    st.session_state.modo_interface = st.selectbox("Modo", ["Desktop", "Mobile 1", "Mobile 2"], index=["Desktop", "Mobile"].index(st.session_state.modo_interface))
+    st.session_state.modo_interface = st.selectbox("Modo", ["Desktop", "Mobile 1", "Mobile 2"], index=["Desktop", "Mobile 1", "Mobile 2"].index(st.session_state.modo_interface))
 with col3:
     st.session_state.filtro = st.selectbox("Filtro", ["Todos", "Ativos", "De alta"], index=["Todos", "Ativos", "De alta"].index(st.session_state.filtro))
 with col4:
