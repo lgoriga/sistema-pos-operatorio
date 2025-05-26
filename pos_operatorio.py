@@ -120,3 +120,5 @@ with col5:
 
 if st.session_state.logado:
     pass
+
+if st.session_state.logado:
