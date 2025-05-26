@@ -96,7 +96,7 @@ with col0:
         st.session_state.pagina = "principal"
         st.rerun()
 with col2:
-    st.session_state.modo_interface = st.selectbox("Modo", ["Desktop", "Mobile"], index=["Desktop", "Mobile"].index(st.session_state.modo_interface))
+    st.session_state.modo_interface = st.selectbox("Modo", ["Desktop", "Mobile 1", "Mobile 2"], index=["Desktop", "Mobile"].index(st.session_state.modo_interface))
 with col3:
     st.session_state.filtro = st.selectbox("Filtro", ["Todos", "Ativos", "De alta"], index=["Todos", "Ativos", "De alta"].index(st.session_state.filtro))
 with col4:
@@ -124,6 +124,7 @@ with col5:
 
 
 
+
 # Página principal
 if st.session_state.pagina == "principal":
     st.markdown("### Lista de Pacientes")
@@ -134,55 +135,85 @@ if st.session_state.pagina == "principal":
     elif st.session_state.filtro == "De alta":
         df = df[df["Alta"] == "Sim"]
 
+    modo = st.session_state.modo_interface
+
     if df.empty:
         st.info("Nenhum paciente cadastrado.")
     else:
-        st.markdown("#### Pacientes")
-
-        # Cabeçalho da tabela
-        cabecalho = st.columns([0.5, 2.5, 1.5, 1.5, 1.5, 1, 1])
-        cabecalho[0].markdown("**Nº**")
-        cabecalho[1].markdown("**Nome**")
-        cabecalho[2].markdown("**Data da cirurgia**")
-        cabecalho[3].markdown("**Data do retorno**")
-        cabecalho[4].markdown("**Status**")
-        cabecalho[5].markdown("**Atendido?**")
-        cabecalho[6].markdown("**Editar**")
-
         dias_retornos = [7, 14, 21, 30, 60, 90, 180, 365]
 
-        for i, row in df.iterrows():
-            nome = row["Nome"]
-            data_cirurgia = datetime.strptime(row["Data da cirurgia"], "%d/%m/%y")
+        if modo == "Desktop":
+            st.markdown("#### Pacientes")
+            cabecalho = st.columns([0.5, 2.5, 1.5, 1.5, 1.5, 1, 1])
+            cabecalho[0].markdown("**Nº**")
+            cabecalho[1].markdown("**Nome**")
+            cabecalho[2].markdown("**Data da cirurgia**")
+            cabecalho[3].markdown("**Data do retorno**")
+            cabecalho[4].markdown("**Status**")
+            cabecalho[5].markdown("**Atendido?**")
+            cabecalho[6].markdown("**Editar**")
 
-            for j, dias in enumerate(dias_retornos):
-                data_retorno = data_cirurgia + timedelta(days=dias)
-                key_check = f"check_atendido_{i}_{j}"
-                atendido = st.session_state.get(key_check, False)
-                status = "🟢 Agendado" if atendido else "🟡 Pendente"
+            for i, row in df.iterrows():
+                nome = row["Nome"]
+                data_cirurgia = datetime.strptime(row["Data da cirurgia"], "%d/%m/%y")
+                for j, dias in enumerate(dias_retornos):
+                    data_retorno = data_cirurgia + timedelta(days=dias)
+                    key_check = f"check_atendido_{i}_{j}"
+                    atendido = st.session_state.get(key_check, False)
+                    status = "🟢 Agendado" if atendido else "🟡 Pendente"
+                    linha = st.columns([0.5, 2.5, 1.5, 1.5, 1.5, 1, 1])
+                    if j == 0:
+                        linha[0].write(f"{i+1}")
+                        linha[1].write(nome)
+                        linha[2].write(data_cirurgia.strftime("%d/%m/%y"))
+                    else:
+                        linha[0].write("")
+                        linha[1].write("")
+                        linha[2].write("")
+                    linha[3].write(data_retorno.strftime("%d/%m/%Y"))
+                    linha[4].write(status)
+                    linha[5].checkbox("", key=key_check, value=atendido, label_visibility="collapsed")
+                    if j == 0:
+                        if linha[6].button("Editar", key=f"editar_{i}"):
+                            st.session_state.paciente_editando = i
+                            st.session_state.pagina = "editar_paciente"
+                            st.rerun()
+                    else:
+                        linha[6].write("")
+                    st.markdown("<hr style='margin:0.2rem 0;'>", unsafe_allow_html=True)
 
-                linha = st.columns([0.5, 2.5, 1.5, 1.5, 1.5, 1, 1])
-                if j == 0:
-                    linha[0].write(f"{i+1}")
-                    linha[1].write(nome)
-                    linha[2].write(data_cirurgia.strftime("%d/%m/%y"))
-                else:
-                    linha[0].write("")
-                    linha[1].write("")
-                    linha[2].write("")
+        elif modo == "Mobile 1":
+            for i, row in df.iterrows():
+                nome = row["Nome"]
+                data_cirurgia = datetime.strptime(row["Data da cirurgia"], "%d/%m/%y")
+                st.markdown(f"**Paciente {i+1}: {nome}**")
+                st.write(f"Data da cirurgia: {data_cirurgia.strftime('%d/%m/%y')}")
+                for j, dias in enumerate(dias_retornos):
+                    data_retorno = data_cirurgia + timedelta(days=dias)
+                    key_check = f"check_atendido_{i}_{j}"
+                    atendido = st.session_state.get(key_check, False)
+                    status = "🟢 Agendado" if atendido else "🟡 Pendente"
+                    st.write(f"- Retorno {j+1}: {data_retorno.strftime('%d/%m/%Y')} | {status}")
+                    st.checkbox("Atendido?", key=key_check)
+                if st.button("Editar", key=f"editar_{i}"):
+                    st.session_state.paciente_editando = i
+                    st.session_state.pagina = "editar_paciente"
+                    st.rerun()
+                st.markdown("---")
 
-                linha[3].write(data_retorno.strftime("%d/%m/%Y"))
-                linha[4].write(status)
-                linha[5].checkbox("", key=key_check, value=atendido, label_visibility="collapsed")
-                if j == 0:
-                    if linha[6].button("Editar", key=f"editar_{i}"):
-                        st.session_state.paciente_editando = i
-                        st.session_state.pagina = "editar_paciente"
-                        st.rerun()
-                else:
-                    linha[6].write("")
-
-                st.markdown("<hr style='margin:0.2rem 0;'>", unsafe_allow_html=True)
+        elif modo == "Mobile 2":
+            for i, row in df.iterrows():
+                nome = row["Nome"]
+                data_cirurgia = row["Data da cirurgia"]
+                proximo = row["Próximo retorno"]
+                status = row["Status"]
+                st.markdown(f"**{nome}**")
+                st.write(f"Cirurgia: {data_cirurgia} | Retorno: {proximo} | Status: {status}")
+                if st.button("Editar", key=f"editar_{i}"):
+                    st.session_state.paciente_editando = i
+                    st.session_state.pagina = "editar_paciente"
+                    st.rerun()
+                st.markdown("---")
 
 
 # Página novo paciente
