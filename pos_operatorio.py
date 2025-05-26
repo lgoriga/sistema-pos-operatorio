@@ -118,6 +118,8 @@ with col5:
             st.rerun()
 
 
+
+
 # Página principal
 if st.session_state.pagina == "principal":
     st.markdown("### Lista de Pacientes")
@@ -132,40 +134,40 @@ if st.session_state.pagina == "principal":
         st.info("Nenhum paciente cadastrado.")
     else:
         st.markdown("#### Pacientes")
-        col_header = st.columns([0.5, 1.5, 3, 2, 4, 1])
-        col_header[0].markdown("**Nº**")
-        col_header[1].markdown("**Status**")
-        col_header[2].markdown("**Nome**")
-        col_header[3].markdown("**Data da cirurgia**")
-        col_header[4].markdown("**Agendamentos / Retornos**")
-        col_header[5].markdown("**Editar**")
+        st.markdown("| Nº | Nome | Data da cirurgia | Data do retorno | Status agendamento | Atendido? | Editar |")
+        st.markdown("|----|------|------------------|------------------|---------------------|------------|--------|")
 
-        df.insert(0, "Nº", range(1, len(df) + 1))
-        df["Status de agendamento"] = "🟡 Pendente"
-
+        dias_retornos = [7, 14, 21, 30, 60, 90, 180, 365]
         for i, row in df.iterrows():
-            cols = st.columns([0.5, 1.5, 3, 2, 4, 1])
-            cols[0].write(f"{row['Nº']}")
-            cols[1].write(f"{row['Status']}")
-            cols[2].write(row["Nome"])
-            cols[3].write(row["Data da cirurgia"])
+            nome = row["Nome"]
+            data_cirurgia = datetime.strptime(row["Data da cirurgia"], "%d/%m/%y")
 
-            with cols[4]:
-                st.markdown("**Status agendamento:** 🟡 Pendente")
-                for j, dias in enumerate([7, 14, 21, 30, 60, 90, 180, 365]):
-                    data_retorno = datetime.strptime(row["Data da cirurgia"], "%d/%m/%y") + timedelta(days=dias)
-                    col_r1, col_r2 = st.columns([1, 3])
-                    key_check = f"check_ret_{i}_{j}"
-                    marcado = col_r1.checkbox("Atendido?", key=key_check)
-                    if marcado:
-                        st.markdown(f"<div style='color:gray'>{data_retorno.strftime('%d/%m/%Y')}</div>", unsafe_allow_html=True)
-                    else:
-                        col_r2.write(data_retorno.strftime('%d/%m/%Y'))
+            for j, dias in enumerate(dias_retornos):
+                data_retorno = data_cirurgia + timedelta(days=dias)
+                key_check = f"check_atendido_{i}_{j}"
+                atendido = st.session_state.get(key_check, False)
+                status_agendamento = "🟢 Agendado" if atendido else "🟡 Pendente"
 
-            if cols[5].button("Editar", key=f"editar_{i}"):
-                st.session_state.paciente_editando = i
-                st.session_state.pagina = "editar_paciente"
-                st.rerun()
+                col1, col2, col3, col4, col5, col6, col7 = st.columns([0.5, 2, 2, 2, 2, 1, 1])
+                if j == 0:
+                    col1.write(f"{i+1}")
+                    col2.write(nome)
+                    col3.write(row["Data da cirurgia"])
+                else:
+                    col1.write("")
+                    col2.write("")
+                    col3.write("")
+
+                col4.write(data_retorno.strftime("%d/%m/%Y"))
+                col5.write(status_agendamento)
+                col6.checkbox(" ", key=key_check, value=atendido, label_visibility="collapsed")
+                if j == 0:
+                    if col7.button("Editar", key=f"editar_{i}"):
+                        st.session_state.paciente_editando = i
+                        st.session_state.pagina = "editar_paciente"
+                        st.rerun()
+                else:
+                    col7.write("")
 
 
 # Página novo paciente
