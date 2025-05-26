@@ -120,6 +120,7 @@ with col5:
 
 
 
+
 # Página principal
 if st.session_state.pagina == "principal":
     st.markdown("### Lista de Pacientes")
@@ -134,8 +135,14 @@ if st.session_state.pagina == "principal":
         st.info("Nenhum paciente cadastrado.")
     else:
         st.markdown("#### Pacientes")
-        st.markdown("| Nº | Nome | Data da cirurgia | Data do retorno | Status agendamento | Atendido? | Editar |")
-        st.markdown("|----|------|------------------|------------------|---------------------|------------|--------|")
+        header_cols = st.columns([0.5, 2, 2, 2, 2, 1, 1])
+        header_cols[0].write("**Nº**")
+        header_cols[1].write("**Nome**")
+        header_cols[2].write("**Data da cirurgia**")
+        header_cols[3].write("**Data do retorno**")
+        header_cols[4].write("**Status agendamento**")
+        header_cols[5].write("**Atendido?**")
+        header_cols[6].write("**Editar**")
 
         dias_retornos = [7, 14, 21, 30, 60, 90, 180, 365]
         for i, row in df.iterrows():
