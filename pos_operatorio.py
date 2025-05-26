@@ -24,7 +24,7 @@ def salvar_usuarios(dados):
 
 def carregar_pacientes():
     if pacientes_path.exists():
-        df = pd.read_csv(pacientes_path, parse_dates=["Data da cirurgia", "Próximo retorno"])
+        df = pd.read_csv(pacientes_path, parse_dates=["Data da cirurgia", "Próximo retorno"], dayfirst=True)
         df["Data da cirurgia"] = df["Data da cirurgia"].dt.strftime("%d/%m/%y")
         df["Próximo retorno"] = df["Próximo retorno"].dt.strftime("%d/%m/%y")
         return df
@@ -50,7 +50,6 @@ def status_cor(data_proximo_retorno):
     else:
         return "🟢 Ok"
 
-# Sessões
 if "usuarios" not in st.session_state:
     st.session_state.usuarios = carregar_usuarios()
 if "logado" not in st.session_state:
@@ -72,7 +71,8 @@ if not st.session_state.logado:
             st.session_state.logado = True
             st.session_state.usuario = usuario
             st.session_state.admin = st.session_state.usuarios[usuario]["admin"]
-            st.rerun()
+            st.session_state.pagina = "principal"
+            st.experimental_rerun()
         else:
             st.error("Usuário ou senha incorretos.")
     st.stop()
@@ -88,6 +88,7 @@ with col3:
 with col4:
     if st.button("Adicionar Paciente"):
         st.session_state.pagina = "novo_paciente"
+        st.experimental_rerun()
 with col5:
     with st.expander("Ajustes"):
         if st.button("Trocar senha"):
@@ -99,55 +100,64 @@ with col5:
                 st.experimental_rerun()
         if st.button("Sair"):
             st.session_state.logado = False
-            st.rerun()
+            st.session_state.pagina = "principal"
+            st.experimental_rerun()
 
 # Página criar novo usuário
 if st.session_state.pagina == "novo_usuario":
     st.markdown("### Criar Novo Usuário")
-    novo_usuario = st.text_input("Usuário")
-    nova_senha = st.text_input("Senha", type="password")
-    confirmar = st.text_input("Confirmar senha", type="password")
-    novo_admin = st.checkbox("Administrador")
-    col_a, col_b = st.columns(2)
-    with col_a:
-        if st.button("Criar usuário"):
-            if novo_usuario and nova_senha == confirmar:
-                st.session_state.usuarios[novo_usuario] = {
-                    "senha": hash_senha(nova_senha),
-                    "admin": novo_admin
-                }
-                salvar_usuarios(st.session_state.usuarios)
-                st.success("Usuário criado com sucesso.")
-            else:
-                st.error("Verifique os campos.")
-    with col_b:
-        if st.button("Cancelar"):
-            st.session_state.pagina = "principal"
-            st.rerun()
+    with st.form("criar_usuario"):
+        novo_usuario = st.text_input("Usuário")
+        nova_senha = st.text_input("Senha", type="password")
+        confirmar = st.text_input("Confirmar senha", type="password")
+        novo_admin = st.checkbox("Administrador")
+        col1, col2 = st.columns(2)
+        with col1:
+            criar = st.form_submit_button("Criar usuário")
+        with col2:
+            cancelar = st.form_submit_button("Cancelar")
+
+    if criar:
+        if novo_usuario and nova_senha == confirmar:
+            st.session_state.usuarios[novo_usuario] = {
+                "senha": hash_senha(nova_senha),
+                "admin": novo_admin
+            }
+            salvar_usuarios(st.session_state.usuarios)
+            st.success("Usuário criado com sucesso.")
+        else:
+            st.error("Verifique os campos.")
+    elif cancelar:
+        st.session_state.pagina = "principal"
+        st.experimental_rerun()
     st.stop()
 
 # Página trocar senha
 if st.session_state.pagina == "trocar_senha":
     st.markdown("### Trocar Senha")
-    senha_atual = st.text_input("Senha atual", type="password")
-    nova_senha = st.text_input("Nova senha", type="password")
-    confirmar = st.text_input("Confirmar nova senha", type="password")
-    col1, col2 = st.columns(2)
-    with col1:
-        if st.button("Salvar nova senha"):
-            if hash_senha(senha_atual) == st.session_state.usuarios[st.session_state.usuario]["senha"]:
-                if nova_senha == confirmar and nova_senha != "":
-                    st.session_state.usuarios[st.session_state.usuario]["senha"] = hash_senha(nova_senha)
-                    salvar_usuarios(st.session_state.usuarios)
-                    st.success("Senha atualizada com sucesso!")
-                else:
-                    st.error("As senhas não coincidem ou estão vazias.")
+    with st.form("form_senha"):
+        senha_atual = st.text_input("Senha atual", type="password")
+        nova_senha = st.text_input("Nova senha", type="password")
+        confirmar = st.text_input("Confirmar nova senha", type="password")
+        col1, col2 = st.columns(2)
+        with col1:
+            salvar = st.form_submit_button("Salvar nova senha")
+        with col2:
+            cancelar = st.form_submit_button("Cancelar")
+
+    if salvar:
+        if hash_senha(senha_atual) == st.session_state.usuarios[st.session_state.usuario]["senha"]:
+            if nova_senha == confirmar and nova_senha != "":
+                st.session_state.usuarios[st.session_state.usuario]["senha"] = hash_senha(nova_senha)
+                salvar_usuarios(st.session_state.usuarios)
+                st.success("Senha atualizada com sucesso!")
             else:
-                st.error("Senha atual incorreta.")
-    with col2:
-        if st.button("Cancelar"):
-            st.session_state.pagina = "principal"
-            st.rerun()
+                st.error("As senhas não coincidem ou estão vazias.")
+        else:
+            st.error("Senha atual incorreta.")
+    elif cancelar:
+        st.session_state.pagina = "principal"
+        st.experimental_rerun()
     st.stop()
 
 # Página novo paciente
@@ -171,7 +181,7 @@ if st.session_state.pagina == "novo_paciente":
             salvar_pacientes(st.session_state.pacientes)
             st.success("Paciente salvo!")
             st.session_state.pagina = "principal"
-            st.rerun()
+            st.experimental_rerun()
     st.stop()
 
 # Página principal
