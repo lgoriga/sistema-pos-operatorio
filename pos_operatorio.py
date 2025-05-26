@@ -72,7 +72,7 @@ if not st.session_state.logado:
             st.session_state.usuario = usuario
             st.session_state.admin = st.session_state.usuarios[usuario]["admin"]
             st.session_state.pagina = "principal"
-            st.experimental_rerun()
+            st.rerun()
         else:
             st.error("Usuário ou senha incorretos.")
     st.stop()
@@ -88,20 +88,20 @@ with col3:
 with col4:
     if st.button("Adicionar Paciente"):
         st.session_state.pagina = "novo_paciente"
-        st.experimental_rerun()
+        st.rerun()
 with col5:
     with st.expander("Ajustes"):
         if st.button("Trocar senha"):
             st.session_state.pagina = "trocar_senha"
-            st.experimental_rerun()
+            st.rerun()
         if st.session_state.admin:
             if st.button("Criar novo usuário"):
                 st.session_state.pagina = "novo_usuario"
-                st.experimental_rerun()
+                st.rerun()
         if st.button("Sair"):
             st.session_state.logado = False
             st.session_state.pagina = "principal"
-            st.experimental_rerun()
+            st.rerun()
 
 # Página criar novo usuário
 if st.session_state.pagina == "novo_usuario":
@@ -129,7 +129,7 @@ if st.session_state.pagina == "novo_usuario":
             st.error("Verifique os campos.")
     elif cancelar:
         st.session_state.pagina = "principal"
-        st.experimental_rerun()
+        st.rerun()
     st.stop()
 
 # Página trocar senha
@@ -157,7 +157,7 @@ if st.session_state.pagina == "trocar_senha":
             st.error("Senha atual incorreta.")
     elif cancelar:
         st.session_state.pagina = "principal"
-        st.experimental_rerun()
+        st.rerun()
     st.stop()
 
 # Página novo paciente
@@ -181,7 +181,7 @@ if st.session_state.pagina == "novo_paciente":
             salvar_pacientes(st.session_state.pacientes)
             st.success("Paciente salvo!")
             st.session_state.pagina = "principal"
-            st.experimental_rerun()
+            st.rerun()
     st.stop()
 
 # Página principal
