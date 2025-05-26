@@ -117,6 +117,7 @@ with col5:
             st.session_state.pagina = "principal"
             st.rerun()
 
+
 # Página principal
 if st.session_state.pagina == "principal":
     st.markdown("### Lista de Pacientes")
@@ -130,22 +131,41 @@ if st.session_state.pagina == "principal":
     if df.empty:
         st.info("Nenhum paciente cadastrado.")
     else:
+        st.markdown("#### Pacientes")
+        col_header = st.columns([0.5, 1.5, 3, 2, 4, 1])
+        col_header[0].markdown("**Nº**")
+        col_header[1].markdown("**Status**")
+        col_header[2].markdown("**Nome**")
+        col_header[3].markdown("**Data da cirurgia**")
+        col_header[4].markdown("**Agendamentos / Retornos**")
+        col_header[5].markdown("**Editar**")
+
         df.insert(0, "Nº", range(1, len(df) + 1))
-        df["Status de agendamento"] = df["Próximo retorno"].apply(status_cor)
+        df["Status de agendamento"] = "🟡 Pendente"
+
         for i, row in df.iterrows():
-            cols = st.columns([0.5, 1.5, 3, 2, 1])
+            cols = st.columns([0.5, 1.5, 3, 2, 4, 1])
             cols[0].write(f"{row['Nº']}")
-            cols[1].write(f"{row['Status de agendamento']}")
+            cols[1].write(f"{row['Status']}")
             cols[2].write(row["Nome"])
             cols[3].write(row["Data da cirurgia"])
-            if cols[4].button("Editar", key=f"editar_{i}"):
+
+            with cols[4]:
+                st.markdown("**Status agendamento:** 🟡 Pendente")
+                for j, dias in enumerate([7, 14, 21, 30, 60, 90, 180, 365]):
+                    data_retorno = datetime.strptime(row["Data da cirurgia"], "%d/%m/%y") + timedelta(days=dias)
+                    col_r1, col_r2 = st.columns([1, 3])
+                    key_check = f"check_ret_{i}_{j}"
+                    marcado = col_r1.checkbox("Atendido?", key=key_check)
+                    if marcado:
+                        st.markdown(f"<div style='color:gray'>{data_retorno.strftime('%d/%m/%Y')}</div>", unsafe_allow_html=True)
+                    else:
+                        col_r2.write(data_retorno.strftime('%d/%m/%Y'))
+
+            if cols[5].button("Editar", key=f"editar_{i}"):
                 st.session_state.paciente_editando = i
                 st.session_state.pagina = "editar_paciente"
                 st.rerun()
-
-
-
-
 
 
 # Página novo paciente
