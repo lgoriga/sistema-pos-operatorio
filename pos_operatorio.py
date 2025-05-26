@@ -71,6 +71,10 @@ if "logado" not in st.session_state:
     st.session_state.pagina = "principal"
     st.session_state.pacientes = carregar_pacientes()
     st.session_state.log = carregar_log()
+if "modo_interface" not in st.session_state:
+    st.session_state.modo_interface = "Desktop"
+if "filtro" not in st.session_state:
+    st.session_state.filtro = "Todos"
 
 # Login
 if not st.session_state.logado:
@@ -88,15 +92,14 @@ if not st.session_state.logado:
             st.error("Usuário ou senha incorretos.")
     st.stop()
 
-
-# Barra superior sempre visível
+# Barra superior única
 col1, col2, col3, col4, col5 = st.columns([2, 1, 1, 1, 1])
 with col1:
     st.markdown("### Sistema Pós-Operatório")
 with col2:
-    st.selectbox("Modo", ["Desktop", "Mobile"], key="modo", label_visibility="collapsed")
+    st.session_state.modo_interface = st.selectbox("Modo", ["Desktop", "Mobile"], index=["Desktop", "Mobile"].index(st.session_state.modo_interface))
 with col3:
-    st.selectbox("Filtro", ["Todos", "Ativos", "De alta"], key="filtro")
+    st.session_state.filtro = st.selectbox("Filtro", ["Todos", "Ativos", "De alta"], index=["Todos", "Ativos", "De alta"].index(st.session_state.filtro))
 with col4:
     if st.button("Adicionar Paciente"):
         st.session_state.pagina = "novo_paciente"
@@ -115,52 +118,30 @@ with col5:
             st.session_state.pagina = "principal"
             st.rerun()
 
-
 # Página principal
 if st.session_state.pagina == "principal":
-    
-    col1, col2, col3, col4, col5 = st.columns([2, 1, 1, 1, 1])
-    with col1:
-        st.markdown("### Sistema Pós-Operatório")
-    with col2:
-        st.selectbox("Modo", ["Desktop", "Mobile"], key="modo", label_visibility="collapsed")
-    with col3:
-        st.selectbox("Filtro", ["Todos", "Ativos", "De alta"], key="filtro")
-    with col4:
-        if st.button("Adicionar Paciente"):
-            st.session_state.pagina = "novo_paciente"
-            st.rerun()
-    with col5:
-        with st.expander("Ajustes"):
-            if st.button("Trocar senha"):
-                st.session_state.pagina = "trocar_senha"
-                st.rerun()
-            if st.session_state.admin:
-                if st.button("Criar novo usuário"):
-                    st.session_state.pagina = "novo_usuario"
-                    st.rerun()
-            if st.button("Sair"):
-                st.session_state.logado = False
-                st.session_state.pagina = "principal"
-                st.rerun()
-
     st.markdown("### Lista de Pacientes")
     df = st.session_state.pacientes.copy()
 
+    if st.session_state.filtro == "Ativos":
+        df = df[df["Alta"] == "Não"]
+    elif st.session_state.filtro == "De alta":
+        df = df[df["Alta"] == "Sim"]
+
     if df.empty:
         st.info("Nenhum paciente cadastrado.")
+    else:
+        df.insert(0, "Nº", range(1, len(df) + 1))
+        df["Status de agendamento"] = df["Próximo retorno"].apply(status_cor)
+        for i, row in df.iterrows():
+            cols = st.columns([0.5, 1.5, 3, 2, 1])
+            cols[0].write(f"{row['Nº']}")
+            cols[1].write(f"{row['Status de agendamento']}")
+            cols[2].write(row["Nome"])
+            cols[3].write(row["Data da cirurgia"])
+            if cols[4].button("Editar", key=f"editar_{i}"):
+                st.session_state.paciente_editando = i
+                st.session_state.pagina = "editar_paciente"
+                st.rerun()
 
-    df.insert(0, "Nº", range(1, len(df) + 1))
-    df["Status de agendamento"] = df["Próximo retorno"].apply(status_cor)
-
-    for i, row in df.iterrows():
-        cols = st.columns([0.5, 1.5, 3, 2, 1])
-        cols[0].write(f"{row['Nº']}")
-        cols[1].write(f"{row['Status de agendamento']}")
-        cols[2].write(row["Nome"])
-        cols[3].write(row["Data da cirurgia"])
-        if cols[4].button("Editar", key=f"editar_{i}"):
-            st.session_state.paciente_editando = i
-            st.session_state.pagina = "editar_paciente"
-            st.rerun()
-    st.stop()
+# O restante da navegação (edição, troca de senha, criação de usuário) será mantido como antes.
