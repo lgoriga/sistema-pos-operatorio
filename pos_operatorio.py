@@ -1,4 +1,3 @@
-
 import streamlit as st
 import pandas as pd
 import hashlib
@@ -231,3 +230,58 @@ if st.session_state.pagina == "novo_usuario":
     elif cancelar:
         st.session_state.pagina = "principal"
         st.rerun()
+
+
+# Página editar paciente
+if st.session_state.pagina == "editar_paciente":
+    idx = st.session_state.paciente_editando
+    paciente = st.session_state.pacientes.iloc[idx]
+    st.subheader(f"Editar Paciente: {paciente['Nome']}")
+
+    with st.form("form_edicao_paciente"):
+        nome = st.text_input("Nome", value=paciente["Nome"])
+        nascimento = st.date_input("Data de nascimento", value=datetime.strptime(paciente["Nascimento"], "%d/%m/%Y"))
+        telefone = st.text_input("Telefone", value=paciente["Telefone"])
+        data_cirurgia = st.date_input("Data da cirurgia", value=datetime.strptime(paciente["Data da cirurgia"], "%d/%m/%y"))
+        retorno = st.date_input("Próximo retorno", value=datetime.strptime(paciente["Próximo retorno"], "%d/%m/%y"))
+        alta = st.selectbox("Teve alta?", ["Não", "Sim"], index=0 if paciente["Alta"] == "Não" else 1)
+        salvar = st.form_submit_button("Salvar alterações")
+
+    if salvar:
+        log_textos = []
+        df = st.session_state.pacientes
+
+        def log_alteracao(campo, antigo, novo):
+            if antigo != novo:
+                log_textos.append(f"{campo} de {antigo} para {novo}")
+                df.at[idx, campo] = novo
+
+        log_alteracao("Nome", paciente["Nome"], nome)
+        log_alteracao("Nascimento", paciente["Nascimento"], nascimento.strftime("%d/%m/%Y"))
+        log_alteracao("Telefone", paciente["Telefone"], telefone)
+        log_alteracao("Data da cirurgia", paciente["Data da cirurgia"], data_cirurgia.strftime("%d/%m/%y"))
+        log_alteracao("Próximo retorno", paciente["Próximo retorno"], retorno.strftime("%d/%m/%y"))
+        log_alteracao("Alta", paciente["Alta"], alta)
+
+        df.at[idx, "Status"] = status_cor(retorno)
+        salvar_pacientes(df)
+        st.session_state.pacientes = df
+
+        if log_textos:
+            agora = datetime.now().strftime("%d/%m/%y %H:%M")
+            for log_item in log_textos:
+                st.session_state.log.append(f"{agora} {st.session_state.usuario} modificou {log_item}")
+            salvar_log(st.session_state.log)
+
+        st.success("Alterações salvas.")
+        st.session_state.pagina = "principal"
+        st.rerun()
+
+    if st.button("Cancelar"):
+        st.session_state.pagina = "principal"
+        st.rerun()
+
+    st.markdown("### Histórico de edições:")
+    for log in reversed(st.session_state.log):
+        if paciente["Nome"] in log:
+            st.markdown(f"- {log}")
