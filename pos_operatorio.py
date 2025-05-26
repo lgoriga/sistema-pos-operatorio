@@ -90,12 +90,37 @@ if not st.session_state.logado:
 
 # Página principal
 if st.session_state.pagina == "principal":
+    
+    col1, col2, col3, col4, col5 = st.columns([2, 1, 1, 1, 1])
+    with col1:
+        st.markdown("### Sistema Pós-Operatório")
+    with col2:
+        st.selectbox("Modo", ["Desktop", "Mobile"], key="modo")
+    with col3:
+        st.selectbox("Filtro", ["Todos", "Ativos", "De alta"], key="filtro")
+    with col4:
+        if st.button("Adicionar Paciente"):
+            st.session_state.pagina = "novo_paciente"
+            st.rerun()
+    with col5:
+        with st.expander("Ajustes"):
+            if st.button("Trocar senha"):
+                st.session_state.pagina = "trocar_senha"
+                st.rerun()
+            if st.session_state.admin:
+                if st.button("Criar novo usuário"):
+                    st.session_state.pagina = "novo_usuario"
+                    st.rerun()
+            if st.button("Sair"):
+                st.session_state.logado = False
+                st.session_state.pagina = "principal"
+                st.rerun()
+
     st.markdown("### Lista de Pacientes")
     df = st.session_state.pacientes.copy()
 
     if df.empty:
         st.info("Nenhum paciente cadastrado.")
-        st.stop()
 
     df.insert(0, "Nº", range(1, len(df) + 1))
     df["Status de agendamento"] = df["Próximo retorno"].apply(status_cor)
