@@ -119,3 +119,4 @@ with col5:
             st.rerun()
 
 if st.session_state.logado:
+    pass
