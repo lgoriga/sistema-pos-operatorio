@@ -122,6 +122,7 @@ with col5:
 
 
 
+
 # Página principal
 if st.session_state.pagina == "principal":
     st.markdown("### Lista de Pacientes")
@@ -143,20 +144,28 @@ if st.session_state.pagina == "principal":
         }
         .tabela-pacientes th, .tabela-pacientes td {
             border: 1px solid #ddd;
-            padding: 8px;
+            padding: 6px;
             text-align: center;
+            font-size: 14px;
         }
         .tabela-pacientes th {
             background-color: #f2f2f2;
             font-weight: bold;
         }
+        .col-num { width: 40px; }
+        .col-nome { width: 250px; text-align: left; }
+        .col-data { width: 100px; }
+        .col-status { width: 100px; }
+        .col-check { width: 80px; }
+        .col-editar { width: 80px; }
         </style>
         """, unsafe_allow_html=True)
 
         dias_retornos = [7, 14, 21, 30, 60, 90, 180, 365]
         html = '<table class="tabela-pacientes">'
-        html += "<thead><tr><th>Nº</th><th>Nome</th><th>Data da cirurgia</th><th>Data do retorno</th><th>Status agendamento</th><th>Atendido?</th><th>Editar</th></tr></thead><tbody>"
+        html += "<thead><tr><th class='col-num'>Nº</th><th class='col-nome'>Nome</th><th class='col-data'>Data da cirurgia</th><th class='col-data'>Data do retorno</th><th class='col-status'>Status</th><th class='col-check'>Atendido?</th><th class='col-editar'>Editar</th></tr></thead><tbody>"
 
+        checkboxes = []
         for i, row in df.iterrows():
             nome = row["Nome"]
             data_cirurgia = datetime.strptime(row["Data da cirurgia"], "%d/%m/%y")
@@ -166,13 +175,14 @@ if st.session_state.pagina == "principal":
                 key_check = f"check_atendido_{i}_{j}"
                 atendido = st.session_state.get(key_check, False)
                 status_agendamento = "🟢 Agendado" if atendido else "🟡 Pendente"
+                checked_attr = "checked" if atendido else ""
+                checkbox_html = f"<input type='checkbox' {'checked' if atendido else ''} disabled>"
 
                 html += "<tr>"
                 if j == 0:
                     html += f"<td rowspan='8'>{i+1}</td><td rowspan='8'>{nome}</td><td rowspan='8'>{data_cirurgia.strftime('%d/%m/%y')}</td>"
 
-                html += f"<td>{data_retorno.strftime('%d/%m/%Y')}</td><td>{status_agendamento}</td><td>"
-                html += f"<input type='checkbox' disabled {'checked' if atendido else ''}></td>"
+                html += f"<td>{data_retorno.strftime('%d/%m/%Y')}</td><td>{status_agendamento}</td><td>{checkbox_html}</td>"
 
                 if j == 0:
                     html += f"<td rowspan='8'><form action='#' method='post'><button name='editar_{i}'>Editar</button></form></td>"
