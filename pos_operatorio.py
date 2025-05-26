@@ -165,8 +165,8 @@ if st.session_state.pagina == "novo_paciente":
     with st.form("form_paciente", clear_on_submit=True):
         st.subheader("Novo Paciente")
         nome = st.text_input("Nome do paciente")
-        data_cirurgia = st.date_input("Data da cirurgia", format="DD/MM/YY")
-        data_retorno = st.date_input("Data do próximo retorno", format="DD/MM/YY")
+        data_cirurgia = st.date_input("Data da cirurgia")
+        data_retorno = st.date_input("Data do próximo retorno")
         alta = st.checkbox("Paciente teve alta?")
         if st.form_submit_button("Salvar"):
             status = status_cor(data_retorno)
