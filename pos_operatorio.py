@@ -108,7 +108,6 @@ with col4:
         st.session_state.pagina = "novo_paciente"
         st.rerun()
 with col5:
-with col5:
     with st.expander("Ajustes"):
         if st.button("Trocar senha"):
             st.session_state.pagina = "trocar_senha"
