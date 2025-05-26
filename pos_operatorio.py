@@ -24,16 +24,24 @@ def salvar_usuarios(dados):
 
 def carregar_pacientes():
     if pacientes_path.exists():
-        return pd.read_csv(pacientes_path, parse_dates=["Data da cirurgia", "Próximo retorno"])
+        df = pd.read_csv(pacientes_path, parse_dates=["Data da cirurgia", "Próximo retorno"])
+        df["Data da cirurgia"] = df["Data da cirurgia"].dt.strftime("%d/%m/%y")
+        df["Próximo retorno"] = df["Próximo retorno"].dt.strftime("%d/%m/%y")
+        return df
     return pd.DataFrame(columns=["Nome", "Data da cirurgia", "Próximo retorno", "Status", "Alta"])
 
 def salvar_pacientes(df):
-    df.to_csv(pacientes_path, index=False)
+    df_to_save = df.copy()
+    df_to_save["Data da cirurgia"] = pd.to_datetime(df_to_save["Data da cirurgia"], dayfirst=True)
+    df_to_save["Próximo retorno"] = pd.to_datetime(df_to_save["Próximo retorno"], dayfirst=True)
+    df_to_save.to_csv(pacientes_path, index=False)
 
 def autenticar(usuario, senha, usuarios):
     return usuario in usuarios and usuarios[usuario]["senha"] == hash_senha(senha)
 
 def status_cor(data_proximo_retorno):
+    if isinstance(data_proximo_retorno, str):
+        data_proximo_retorno = datetime.strptime(data_proximo_retorno, "%d/%m/%y").date()
     hoje = datetime.today().date()
     if data_proximo_retorno < hoje:
         return "🔴 Atrasado"
@@ -81,17 +89,17 @@ with col4:
     if st.button("Adicionar Paciente"):
         st.session_state.pagina = "novo_paciente"
 with col5:
-    opcoes = ["", "Trocar senha", "Sair do sistema"]
-    if st.session_state.admin:
-        opcoes.insert(1, "Criar novo usuário")
-    escolha = st.selectbox("Ajustes", opcoes)
-    if escolha == "Trocar senha":
-        st.session_state.pagina = "trocar_senha"
-    elif escolha == "Criar novo usuário":
-        st.session_state.pagina = "novo_usuario"
-    elif escolha == "Sair do sistema":
-        st.session_state.logado = False
-        st.rerun()
+    with st.expander("Ajustes"):
+        if st.button("Trocar senha"):
+            st.session_state.pagina = "trocar_senha"
+            st.experimental_rerun()
+        if st.session_state.admin:
+            if st.button("Criar novo usuário"):
+                st.session_state.pagina = "novo_usuario"
+                st.experimental_rerun()
+        if st.button("Sair"):
+            st.session_state.logado = False
+            st.rerun()
 
 # Página criar novo usuário
 if st.session_state.pagina == "novo_usuario":
@@ -147,15 +155,15 @@ if st.session_state.pagina == "novo_paciente":
     with st.form("form_paciente", clear_on_submit=True):
         st.subheader("Novo Paciente")
         nome = st.text_input("Nome do paciente")
-        data_cirurgia = st.date_input("Data da cirurgia")
-        data_retorno = st.date_input("Data do próximo retorno")
+        data_cirurgia = st.date_input("Data da cirurgia", format="DD/MM/YY")
+        data_retorno = st.date_input("Data do próximo retorno", format="DD/MM/YY")
         alta = st.checkbox("Paciente teve alta?")
         if st.form_submit_button("Salvar"):
             status = status_cor(data_retorno)
             novo = pd.DataFrame([{
                 "Nome": nome,
-                "Data da cirurgia": data_cirurgia,
-                "Próximo retorno": data_retorno,
+                "Data da cirurgia": data_cirurgia.strftime("%d/%m/%y"),
+                "Próximo retorno": data_retorno.strftime("%d/%m/%y"),
                 "Status": status,
                 "Alta": "Sim" if alta else "Não"
             }])
