@@ -88,12 +88,21 @@ if not st.session_state.logado:
             st.session_state.admin = st.session_state.usuarios[usuario]["admin"]
             st.session_state.pagina = "principal"
             st.rerun()
+
+cancelar = st.button("Cancelar")
+if cancelar:
+    st.session_state.pagina = "principal"
+    st.rerun()
         else:
             st.error("Usuário ou senha incorretos.")
     st.stop()
 
 # Barra superior única
-col1, col2, col3, col4, col5 = st.columns([2, 1, 1, 1, 1])
+col0, col1, col2, col3, col4, col5 = st.columns([1, 2, 1, 1, 1, 1])
+with col0:
+    if st.button("Voltar à lista"):
+        st.session_state.pagina = "principal"
+        st.rerun()
 with col1:
     st.markdown("### Sistema Pós-Operatório")
 with col2:
@@ -109,14 +118,29 @@ with col5:
         if st.button("Trocar senha"):
             st.session_state.pagina = "trocar_senha"
             st.rerun()
+
+cancelar = st.button("Cancelar")
+if cancelar:
+    st.session_state.pagina = "principal"
+    st.rerun()
         if st.session_state.admin:
             if st.button("Criar novo usuário"):
                 st.session_state.pagina = "novo_usuario"
                 st.rerun()
+
+cancelar = st.button("Cancelar")
+if cancelar:
+    st.session_state.pagina = "principal"
+    st.rerun()
         if st.button("Sair"):
             st.session_state.logado = False
             st.session_state.pagina = "principal"
             st.rerun()
+
+cancelar = st.button("Cancelar")
+if cancelar:
+    st.session_state.pagina = "principal"
+    st.rerun()
 
 # Página principal
 if st.session_state.pagina == "principal":
@@ -144,6 +168,11 @@ if st.session_state.pagina == "principal":
                 st.session_state.pagina = "editar_paciente"
                 st.rerun()
 
+cancelar = st.button("Cancelar")
+if cancelar:
+    st.session_state.pagina = "principal"
+    st.rerun()
+
 # O restante da navegação (edição, troca de senha, criação de usuário) será mantido como antes.
 
 
@@ -155,7 +184,7 @@ if st.session_state.pagina == "novo_paciente":
         data_cirurgia = st.date_input("Data da cirurgia")
         data_retorno = st.date_input("Data do próximo retorno")
         alta = st.selectbox("Teve alta?", ["Não", "Sim"])
-        if st.form_submit_button("Salvar"):
+        salvar = st.form_submit_button("Salvar")
             status = status_cor(data_retorno)
             novo = pd.DataFrame([{
                 "Nome": nome,
@@ -169,6 +198,11 @@ if st.session_state.pagina == "novo_paciente":
             st.success("Paciente salvo com sucesso!")
             st.session_state.pagina = "principal"
             st.rerun()
+
+cancelar = st.button("Cancelar")
+if cancelar:
+    st.session_state.pagina = "principal"
+    st.rerun()
 
 # Página de trocar senha
 if st.session_state.pagina == "trocar_senha":
@@ -190,6 +224,11 @@ if st.session_state.pagina == "trocar_senha":
                 st.success("Senha atualizada com sucesso.")
                 st.session_state.pagina = "principal"
                 st.rerun()
+
+cancelar = st.button("Cancelar")
+if cancelar:
+    st.session_state.pagina = "principal"
+    st.rerun()
             else:
                 st.error("As novas senhas não coincidem ou estão em branco.")
         else:
@@ -218,6 +257,11 @@ if st.session_state.pagina == "novo_usuario":
             st.success("Usuário criado com sucesso.")
             st.session_state.pagina = "principal"
             st.rerun()
+
+cancelar = st.button("Cancelar")
+if cancelar:
+    st.session_state.pagina = "principal"
+    st.rerun()
         else:
             st.error("Verifique se o nome foi preenchido e as senhas coincidem.")
     elif cancelar:
