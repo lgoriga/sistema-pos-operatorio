@@ -63,13 +63,12 @@ if not st.session_state.logado:
             st.session_state.logado = True
             st.session_state.usuario = usuario
             st.session_state.admin = st.session_state.usuarios[usuario]["admin"]
-            st.success("Login realizado com sucesso!")
             st.rerun()
         else:
             st.error("Usuário ou senha incorretos.")
     st.stop()
 
-# Barra superior com layout mais ajustado
+# Barra superior
 col1, col2, col3, col4, col5 = st.columns([2, 1, 1, 1, 1])
 with col1:
     st.markdown("### Sistema Pós-Operatório")
@@ -81,17 +80,52 @@ with col4:
     if st.button("Adicionar Paciente"):
         st.session_state.pagina = "novo_paciente"
 with col5:
-    if st.button("Ajustes"):
-        st.session_state.pagina = "ajustes"
+    opcoes = ["", "Trocar senha", "Sair do sistema"]
+    if st.session_state.admin:
+        opcoes.insert(1, "Criar novo usuário")
+    escolha = st.selectbox("Ajustes", opcoes)
+    if escolha == "Trocar senha":
+        st.session_state.pagina = "trocar_senha"
+    elif escolha == "Criar novo usuário":
+        st.session_state.pagina = "novo_usuario"
+    elif escolha == "Sair do sistema":
+        st.session_state.logado = False
+        st.rerun()
 
-# Ajustes: troca de senha e gestão de usuários (admin)
-if st.session_state.pagina == "ajustes":
-    st.markdown("### Ajustes")
-    with st.expander("Trocar Senha"):
-        senha_atual = st.text_input("Senha atual", type="password")
-        nova_senha = st.text_input("Nova senha", type="password")
-        confirmar = st.text_input("Confirmar nova senha", type="password")
-        if st.button("Atualizar senha"):
+# Página de criação de novo usuário
+if st.session_state.pagina == "novo_usuario":
+    st.markdown("### Criar Novo Usuário")
+    novo_usuario = st.text_input("Usuário")
+    nova_senha = st.text_input("Senha", type="password")
+    confirmar = st.text_input("Confirmar senha", type="password")
+    novo_admin = st.checkbox("Administrador")
+    col_a, col_b = st.columns(2)
+    with col_a:
+        if st.button("Criar usuário"):
+            if novo_usuario and nova_senha == confirmar:
+                st.session_state.usuarios[novo_usuario] = {
+                    "senha": hash_senha(nova_senha),
+                    "admin": novo_admin
+                }
+                salvar_usuarios(st.session_state.usuarios)
+                st.success("Usuário criado com sucesso.")
+            else:
+                st.error("Verifique os campos.")
+    with col_b:
+        if st.button("Cancelar"):
+            st.session_state.pagina = "principal"
+            st.rerun()
+    st.stop()
+
+# Página de troca de senha
+if st.session_state.pagina == "trocar_senha":
+    st.markdown("### Trocar Senha")
+    senha_atual = st.text_input("Senha atual", type="password")
+    nova_senha = st.text_input("Nova senha", type="password")
+    confirmar = st.text_input("Confirmar nova senha", type="password")
+    col1, col2 = st.columns(2)
+    with col1:
+        if st.button("Salvar nova senha"):
             if hash_senha(senha_atual) == st.session_state.usuarios[st.session_state.usuario]["senha"]:
                 if nova_senha == confirmar and nova_senha != "":
                     st.session_state.usuarios[st.session_state.usuario]["senha"] = hash_senha(nova_senha)
@@ -101,31 +135,13 @@ if st.session_state.pagina == "ajustes":
                     st.error("As senhas não coincidem ou estão vazias.")
             else:
                 st.error("Senha atual incorreta.")
-
-    if st.session_state.admin:
-        st.markdown("---")
-        st.markdown("### Criar Novo Usuário")
-        novo_usuario = st.text_input("Novo usuário")
-        nova_senha_usuario = st.text_input("Senha do novo usuário", type="password")
-        confirmar_senha_usuario = st.text_input("Confirmar senha", type="password")
-        novo_admin = st.checkbox("Conceder privilégios de administrador")
-        if st.button("Criar usuário"):
-            if novo_usuario and nova_senha_usuario == confirmar_senha_usuario:
-                st.session_state.usuarios[novo_usuario] = {
-                    "senha": hash_senha(nova_senha_usuario),
-                    "admin": novo_admin
-                }
-                salvar_usuarios(st.session_state.usuarios)
-                st.success("Usuário criado com sucesso!")
-            else:
-                st.error("Verifique os campos do novo usuário.")
-    st.markdown("---")
-    if st.button("Sair do sistema"):
-        st.session_state.logado = False
-        st.rerun()
+    with col2:
+        if st.button("Cancelar"):
+            st.session_state.pagina = "principal"
+            st.rerun()
     st.stop()
 
-# Cadastro de novo paciente
+# Página de cadastro de novo paciente
 if st.session_state.pagina == "novo_paciente":
     with st.form("form_paciente", clear_on_submit=True):
         st.subheader("Novo Paciente")
@@ -149,7 +165,7 @@ if st.session_state.pagina == "novo_paciente":
             st.rerun()
     st.stop()
 
-# Exibição de pacientes
+# Página principal - exibição de pacientes
 st.markdown("### Lista de Pacientes")
 df = st.session_state.pacientes.copy()
 if st.session_state.filtro == "Ativos":
