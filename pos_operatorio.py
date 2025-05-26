@@ -147,32 +147,35 @@ if st.session_state.pagina == "principal":
 
 
 
+
 # Página novo paciente
 if st.session_state.pagina == "novo_paciente":
-    with st.form("form_paciente", clear_on_submit=True):
-        st.subheader("Novo Paciente")
-        nome = st.text_input("Nome do paciente")
-        data_nascimento = st.date_input("Data de nascimento")
-        telefone = st.text_input("Telefone (ex: +55 31999999999)", value="+55")
-        data_cirurgia = st.date_input("Data da cirurgia", key="data_cirurgia_novo")
+    st.subheader("Novo Paciente")
+    nome = st.text_input("Nome do paciente")
+    data_nascimento = st.date_input("Data de nascimento")
+    telefone = st.text_input("Telefone (ex: +55 31999999999)", value="+55")
+    data_cirurgia = st.date_input("Data da cirurgia", key="data_cirurgia_novo")
 
-        st.markdown("### Retornos programados")
-        dias_retornos = [7, 14, 21, 30, 60, 90, 180, 365]
-        datas_retornos = []
+    st.markdown("### Retornos programados")
+    dias_retornos = [7, 14, 21, 30, 60, 90, 180, 365]
+    datas_retornos = []
 
-        for i, dias in enumerate(dias_retornos):
-            padrao = data_cirurgia + timedelta(days=dias)
-            col1, col2 = st.columns([1, 3])
-            marcado = col1.checkbox(f"Retorno {i+1}", key=f"check_retorno_{i}")
-            if marcado:
-                data_editada = col2.date_input(f"Data Retorno {i+1}", value=padrao, key=f"data_retorno_{i}")
-                datas_retornos.append((marcado, data_editada))
-            else:
-                col2.date_input(f"Data Retorno {i+1}", value=padrao, disabled=True, key=f"data_retorno_{i}")
-                datas_retornos.append((marcado, padrao))
+    for i, dias in enumerate(dias_retornos):
+        padrao = data_cirurgia + timedelta(days=dias)
+        col1, col2 = st.columns([1, 3])
+        key_check = f"check_retorno_{i}"
+        key_data = f"data_retorno_{i}"
+        if key_check not in st.session_state:
+            st.session_state[key_check] = False
+        marcado = col1.checkbox(f"Retorno {i+1}", value=st.session_state[key_check], key=key_check)
+        if marcado:
+            data_editada = col2.date_input(f"Data Retorno {i+1}", value=padrao, key=key_data)
+            datas_retornos.append((True, data_editada))
+        else:
+            col2.date_input(f"Data Retorno {i+1}", value=padrao, key=key_data, disabled=True)
+            datas_retornos.append((False, padrao))
 
-        salvar = st.form_submit_button("Salvar")
-    if salvar:
+    if st.button("Salvar"):
         proximo_retorno = next((data for marcado, data in datas_retornos if marcado), datas_retornos[0][1])
         novo = pd.DataFrame([{
             "Nome": nome,
@@ -188,6 +191,7 @@ if st.session_state.pagina == "novo_paciente":
         st.success("Paciente salvo com sucesso!")
         st.session_state.pagina = "principal"
         st.rerun()
+
     if st.button("Cancelar"):
         st.session_state.pagina = "principal"
         st.rerun()
@@ -298,6 +302,12 @@ if st.session_state.pagina == "editar_paciente":
         st.rerun()
 
     st.markdown("### Histórico de edições:")
+    nome_original = paciente["Nome"]
+    for log in reversed(st.session_state.log):
+        if nome_original in log:
+            st.markdown(f"- {log}")
+        elif f"modificou Nome de" in log and nome_original in log:
+            st.markdown(f"- {log}")
     for log in reversed(st.session_state.log):
         if paciente["Nome"] in log:
             st.markdown(f"- {log}")
