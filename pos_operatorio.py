@@ -93,7 +93,7 @@ cancelar = st.button("Cancelar")
 if cancelar:
     st.session_state.pagina = "principal"
     st.rerun()
-        else:
+    else:
             st.error("Usuário ou senha incorretos.")
     st.stop()
 
@@ -229,9 +229,9 @@ cancelar = st.button("Cancelar")
 if cancelar:
     st.session_state.pagina = "principal"
     st.rerun()
-            else:
+    else:
                 st.error("As novas senhas não coincidem ou estão em branco.")
-        else:
+    else:
             st.error("Senha atual incorreta.")
     elif cancelar:
         st.session_state.pagina = "principal"
@@ -262,7 +262,7 @@ cancelar = st.button("Cancelar")
 if cancelar:
     st.session_state.pagina = "principal"
     st.rerun()
-        else:
+    else:
             st.error("Verifique se o nome foi preenchido e as senhas coincidem.")
     elif cancelar:
         st.session_state.pagina = "principal"
