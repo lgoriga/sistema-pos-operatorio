@@ -117,3 +117,5 @@ with col5:
             st.session_state.logado = False
             st.session_state.pagina = "principal"
             st.rerun()
+
+if st.session_state.logado:
