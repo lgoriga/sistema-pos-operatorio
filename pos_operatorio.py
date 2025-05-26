@@ -121,6 +121,7 @@ with col5:
 
 
 
+
 # Página principal
 if st.session_state.pagina == "principal":
     st.markdown("### Lista de Pacientes")
@@ -134,17 +135,28 @@ if st.session_state.pagina == "principal":
     if df.empty:
         st.info("Nenhum paciente cadastrado.")
     else:
-        st.markdown("#### Pacientes")
-        header_cols = st.columns([0.5, 2, 2, 2, 2, 1, 1])
-        header_cols[0].write("**Nº**")
-        header_cols[1].write("**Nome**")
-        header_cols[2].write("**Data da cirurgia**")
-        header_cols[3].write("**Data do retorno**")
-        header_cols[4].write("**Status agendamento**")
-        header_cols[5].write("**Atendido?**")
-        header_cols[6].write("**Editar**")
+        st.markdown("""
+        <style>
+        .tabela-pacientes {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .tabela-pacientes th, .tabela-pacientes td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+        }
+        .tabela-pacientes th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+        </style>
+        """, unsafe_allow_html=True)
 
         dias_retornos = [7, 14, 21, 30, 60, 90, 180, 365]
+        html = '<table class="tabela-pacientes">'
+        html += "<thead><tr><th>Nº</th><th>Nome</th><th>Data da cirurgia</th><th>Data do retorno</th><th>Status agendamento</th><th>Atendido?</th><th>Editar</th></tr></thead><tbody>"
+
         for i, row in df.iterrows():
             nome = row["Nome"]
             data_cirurgia = datetime.strptime(row["Data da cirurgia"], "%d/%m/%y")
@@ -155,26 +167,28 @@ if st.session_state.pagina == "principal":
                 atendido = st.session_state.get(key_check, False)
                 status_agendamento = "🟢 Agendado" if atendido else "🟡 Pendente"
 
-                col1, col2, col3, col4, col5, col6, col7 = st.columns([0.5, 2, 2, 2, 2, 1, 1])
+                html += "<tr>"
                 if j == 0:
-                    col1.write(f"{i+1}")
-                    col2.write(nome)
-                    col3.write(row["Data da cirurgia"])
-                else:
-                    col1.write("")
-                    col2.write("")
-                    col3.write("")
+                    html += f"<td rowspan='8'>{i+1}</td><td rowspan='8'>{nome}</td><td rowspan='8'>{data_cirurgia.strftime('%d/%m/%y')}</td>"
 
-                col4.write(data_retorno.strftime("%d/%m/%Y"))
-                col5.write(status_agendamento)
-                col6.checkbox(" ", key=key_check, value=atendido, label_visibility="collapsed")
+                html += f"<td>{data_retorno.strftime('%d/%m/%Y')}</td><td>{status_agendamento}</td><td>"
+                html += f"<input type='checkbox' disabled {'checked' if atendido else ''}></td>"
+
                 if j == 0:
-                    if col7.button("Editar", key=f"editar_{i}"):
-                        st.session_state.paciente_editando = i
-                        st.session_state.pagina = "editar_paciente"
-                        st.rerun()
-                else:
-                    col7.write("")
+                    html += f"<td rowspan='8'><form action='#' method='post'><button name='editar_{i}'>Editar</button></form></td>"
+                html += "</tr>"
+
+        html += "</tbody></table>"
+        st.markdown(html, unsafe_allow_html=True)
+
+        for i, row in df.iterrows():
+            for j in range(8):
+                key_check = f"check_atendido_{i}_{j}"
+                st.checkbox("", key=key_check, label_visibility="collapsed")
+            if st.button("Editar", key=f"editar_{i}"):
+                st.session_state.paciente_editando = i
+                st.session_state.pagina = "editar_paciente"
+                st.rerun()
 
 
 # Página novo paciente
